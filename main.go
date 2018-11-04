@@ -1,13 +1,14 @@
 package main
 
 import (
+	"studyProject/Net"
 	"studyProject/dataType"
 	"studyProject/exercise"
 	"studyProject/factory"
 	"studyProject/fileOperation"
 	"studyProject/find"
 	"studyProject/funcExercise"
-	"studyProject/gtk"
+	"studyProject/goroutine"
 	"studyProject/helloWorld"
 	"studyProject/object"
 	"studyProject/pointer"
@@ -55,12 +56,18 @@ func main() {
 	exercise.Exercise()
 
 	//gtk
-	gtk.GtkInit()
+	//gtk.GtkInit()
 
 	//工厂模式
 	factory.Factory()
 
 	//常见查找算法
 	find.Find()
+
+	//goroutine
+	goroutine.Goroutine()
+
+	//go 网略编程
+	Net.NetInit()
 
 }

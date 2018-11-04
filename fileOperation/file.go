@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 )
 
 func FileExercesie() {
+
 	//writeRepaceFile("./bin/text.text")
 	//appendFileContent("./bin/text.text")
 	//appendFileContent("./bin/text1.text")
@@ -21,7 +23,154 @@ func FileExercesie() {
 	//writeToFile("./bin/text.text", str)
 
 	//copyFileToPath("./bin/text.text", "./bin/copy.text")
+
+	//f , err := os.Create("./file.txt")
+	//if err != nil{
+	//	fmt.Println("create Err",err)
+	//	return
+	//}
+	//defer  f.Close()
+	//
+	//f.WriteString("I am jack ")
+	//
+	//fread , err := os.Open("/Users/jackwei/Desktop/未命名.mov")
+	//if err != nil{
+	//	fmt.Println("open Err",err)
+	//	return
+	//}
+	//defer fread.Close()
+	//
+	//f, err := os.Create("/Users/jackwei/Desktop/test.mov")
+	////f, err := os.OpenFile("/Users/jackwei/Desktop/",os.O_RDWR,0666)
+	//if err != nil{
+	//	fmt.Println("open Err",err)
+	//	return
+	//}
+	//defer f.Close()
+	//
+	////offset,_ := f.Seek(0,io.SeekEnd)
+	////f.WriteAt([]byte("\nhello word"),offset)
+	//
+	//var buf []byte = make([]byte,1024)
+	//reader := bufio.NewReader(fread)
+	//for{
+	//	buf,err = reader.ReadBytes('\n')//如果没有'\n'将会出现漏掉信息
+	//	f.Write(buf)
+	//	if err ==io.EOF{
+	//		fmt.Println(err)
+	//		break
+	//	}
+	//}
+	////for{
+	////	n,err := fread.Read(buf)
+	////	if err==io.EOF{
+	////		break
+	////	}
+	////	f.Write(buf[:n])
+	////}
+
+	//findPath := "/Users/jackwei/Desktop/code/goCode/src/studyProject"
+	//suffix := ".go"
+	//指定目录检索特定文件：
+	//从用户给出的目录中，找出所有的 .jpg 文件。
+	//result := findFileWithPathAndSuffix(findPath,suffix)
+	//for _,v := range result{
+	//	fmt.Println(v)
+	//}
+
+	//指定目录拷贝特定文件：
+	//从用户给出的目录中，拷贝 .mp3文件到指定目录中。
+	//aimPath := "/Users/jackwei/Desktop"
+	//result := findFileWithPathAndSuffix(findPath, suffix)
+	//for _, v := range result {
+	//	copyFileToPath(findPath+"/"+v, aimPath+"/"+v)
+	//}
+
+	//统计指定目录内单词出现次数：
+	//统计指定目录下，所有.txt文件中，“Love”这个单词 出现的次数。
+	//sum := 0
+	//result := findFileWithPathAndSuffix(findPath, suffix)
+	//for _, v := range result {
+	//	count := sumFileWordCount(findPath+"/"+v, "main")
+	//	fmt.Println(v, ":", count)
+	//	sum += count
+	//}
+	//fmt.Println(sum)
+
 }
+
+//根据路径查找路径中的指定后缀的文件，并返回对应的文件名字
+func findFileWithPathAndSuffix(filePath, suffix string) []string {
+	result := make([]string, 0)
+
+	path, err := os.OpenFile(filePath, os.O_RDONLY, os.ModeDir)
+	if err != nil {
+		fmt.Println("open :", err)
+		return result
+	}
+	defer path.Close()
+	fileSlice, err := path.Readdir(-1)
+	if err != nil {
+		fmt.Println("read :", err)
+		return result
+	}
+	for _, file := range fileSlice {
+		if strings.HasSuffix(file.Name(), suffix) {
+			result = append(result, file.Name())
+		}
+	}
+	return result
+
+}
+func copyFileToPath(fromPath, toPath string) {
+	fP, err := os.Open(fromPath)
+	if err != nil {
+		fmt.Println("open\t", err)
+		return
+	}
+	defer fP.Close()
+	toP, err := os.Create(toPath)
+	if err != nil {
+		fmt.Println("create\t", err)
+		return
+	}
+	defer toP.Close()
+
+	buf := make([]byte, 4096)
+	for {
+		n, err := fP.Read(buf)
+		if err == io.EOF {
+			break
+		}
+		toP.Write(buf[:n])
+	}
+
+}
+func sumFileWordCount(filePath, word string) int {
+	result := 0
+
+	f, err := os.Open(filePath)
+	if err != nil {
+		fmt.Println("open", err)
+		return result
+	}
+	defer f.Close()
+
+	buf := make([]byte, 4096)
+	reader := bufio.NewReader(f)
+	for {
+		buf, err = reader.ReadBytes('\n')
+		str := string(buf)
+		result += strings.Count(str, word)
+		if err != nil && err == io.EOF {
+			break
+		}
+
+	}
+	return result
+
+}
+
 func writeRepaceFile(filePath string) {
 	dFile, err := os.Create(filePath) //以覆盖的方式创建文件
 	if err != nil {
@@ -115,50 +264,4 @@ func writeToFile(filePath string, content string) {
 
 	defer file.Close()
 
-}
-func copyFileToPath(fromPath string, toPath string) {
-	fromP, err := os.Open(fromPath)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer fromP.Close()
-
-	toP, err := os.Create(toPath)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	defer toP.Close()
-
-	//按缓冲区大小方式读取
-	buf := make([]byte, 1024)
-	for {
-		n, err := fromP.Read(buf)
-		if err == io.EOF {
-			break
-		}
-		toP.Write(buf[:n])
-	}
-
-	//buf := bufio.NewReader(fromP)
-	//for {
-	//按行读取，切片方式追加
-	//bufSlice, err := buf.ReadBytes('\n')
-	//offset, _ := toP.Seek(0, io.SeekEnd)
-	//toP.WriteAt(bufSlice, offset)
-	//if err == io.EOF {
-	//	fmt.Println(err)
-	//	break
-	//}
-
-	////按行读取，字符串方式方式添加
-	//bufStr, err := buf.ReadString('\n')
-	//toP.WriteString(bufStr)
-	//if err == io.EOF {
-	//	fmt.Println(err)
-	//	break
-	//}
-	//}
 }

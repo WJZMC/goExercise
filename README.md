@@ -47,22 +47,17 @@
     - [4.3 循环结构</br>](#43-循环结构br)
 - [第五章 复杂或者派生数据类型](#第五章-复杂或者派生数据类型)
     - [5.1 函数](#51-函数)
-        - [5.1.1 函数声明和使用](#511-函数声明和使用)
-        - [5.1.2 函数类型和作用域](#512-函数类型和作用域)
-        - [5.1.3 匿名函数和闭包](#513-匿名函数和闭包)
-        - [5.1.4 init函数](#514-init函数)
     - [5.2 数组](#52-数组)
     - [5.3 切片](#53-切片)
     - [5.4 map](#54-map)
     - [5.5 结构体](#55-结构体)
     - [5.6 指针</br>](#56-指针br)
-    - [5.7 接口](#57-接口)
-    - [5.8 管道](#58-管道)
 - [第六章 面相对象 </br>](#第六章-面相对象-br)
     - [6.1 匿名组合</br>](#61-匿名组合br)
     - [6.2 方法</br>](#62-方法br)
     - [6.3 方法继承和重写</br>](#63-方法继承和重写br)
     - [6.4 方法值和方法表达式</br>](#64-方法值和方法表达式br)
+    - [6.5 接口](#65-接口)
 - [第七章 异常处理</br>](#第七章-异常处理br)
     - [error接口</br>](#error接口br)
     - [panic函数</br>](#panic函数br)
@@ -72,6 +67,14 @@
 - [第九章 工程管理</br>](#第九章-工程管理br)
     - [同级目录](#同级目录)
     - [不同级目录，包](#不同级目录包)
+- [第十章 并发编程</br>](#第十章-并发编程br)
+    - [10.1 go程](#101-go程)
+    - [10.2 通道channel  </br>](#102-通道channel--br)
+    - [10.3 并发多核、同步、时间片     </br>](#103-并发多核同步时间片-----br)
+- [第十一章 网略编程  </br>](#第十一章-网略编程--br)
+    - [网略概述 </br>](#网略概述-br)
+    - [socket编程 </br>](#socket编程-br)
+    - [http编程 </br>](#http编程-br)
 
 <!-- /TOC -->
 # golang 学习
@@ -698,7 +701,7 @@ for i,v := range arr{
 
 ## 5.1 函数
 
-### 5.1.1 函数声明和使用
+ ***函数声明和使用*** 
 
    ``` 
     func 函数名(参数) 返回值 {
@@ -773,8 +776,6 @@ func Func2(args ...float64) (float64, float64) {
 }
 ```
 
-### 5.1.2 函数类型和作用域
-
 ***函数类型*** ：可以像基础数据类型一样声明</br>
 
 ```
@@ -801,7 +802,8 @@ var addSub DoubleArgReturnSFunc //方法二
 addSub = funcName1
 sum3, sub3 := addSub(11, 19)
 fmt.Println(sum3, sub3)
-```
+```  
+
 ***全局变量*** </br>
 -   遵循标识符命名规则
 -   同一个包中，全局变量不能重名
@@ -810,7 +812,7 @@ fmt.Println(sum3, sub3)
 -   全局变量存储在数据区，未赋值存储在数据区的未初始化数据区，赋值过，存储在初始化数据区
 
 
-### 5.1.3 匿名函数和闭包
+***匿名函数和闭包*** 
 
 ***匿名函数*** 没有方法名的函数
 
@@ -857,7 +859,7 @@ fmt.Printf("%T,%T,%T", funcBlock, f, f())
 func() func() int,func() int,int
 ```
 
-### 5.1.4 init函数
+***init函数*** 
 
 -	如果一个文件包含全局变量、init、main，执行顺序：全局变量初始化-->init()---->main()
 -	init函数负责初始化工作
@@ -908,6 +910,21 @@ var slice []int = []int{1, 2, 3, 4, 5}
 s := make([]int, 5)
 copy(s,slice) //copy 之后会存在两份，修改不影响原始切片
 fmt.Println(s)
+//从数组截取  和make（）中的参数不一样
+	//slice[low:high:max]
+	//low 起始位置
+	//high 结束位置
+	//len = high - low
+	//max : cap = max -low
+	//max 跟随最近被截取的切片或者数组
+	arr := [10]int{1,2,3,4,5,6,7,8,9,10}
+	s1:= arr[0:3:9]//s1= [1 2 3] s1长度 3 s1容量 9
+	fmt.Println("s1=",s1,"s1长度",len(s1),"s1容量",cap(s1))
+	s2:= s1[1:5:6]//s2= [2 3 4 5] s1长度 4 s1容量 5
+	//s2 虽然是从s1截取，但是实际操作的arr数组，所以high可以截取s1中没有的元素
+	//s2 中max <= s1 的max
+	fmt.Println("s2=",s2,"s1长度",len(s2),"s1容量",cap(s2))
+
 ```
 -   在使用appned进行数据添加时  如果长度超出容量  容量会自动扩容，一般扩容方式为上一次 容量*2  如果超过1024字节 每次扩容上一次的1/4，容量扩容每次都是偶数
 -   len(slice)  计算切片的长度
@@ -915,6 +932,7 @@ fmt.Println(s)
 -   append如果没有超过容量，地址不发生改变，如果超过容量，切片地址会发生变化
 -   切片取地址 不需要加& 直接%P，指向第一个元素的地址，切片截取会影响原来切片的值
 -   切片作为函数参数传递时，是引用传递（地址传递），函数中修改切片的属性，如果容量没超过原始切片容量(使用append超过容量后地址会发生变化)原始切片会一起发生变化，如果超过原始切片容量，则原始数据不发生变化
+
 
 
 ## 5.4 map
@@ -1186,141 +1204,6 @@ func structTest(stu *student) {
 	- 同步消除，如果你定义的对象的方法上有同步锁，但在运行时，却只有一个线程在访问，此时逃逸分析后的机器码，会去掉同步锁运行。</br>
 
 
-## 5.7 接口
-
-接口是一种规范与标准，不关心具体的实现过程
-
-***接口定义和使用***
-
-```
-type peopleer interface{
-	
-}
-```
--   type 接口名 interface{} 来定义一个接口
--   接口名一般以er结尾
--   接口只定义方法，不实现方法
-
-
-```
-type student struct {
-	stid    int
-	name    string
-	age     int
-	address string
-}
-type peopler interface {
-	run()
-}
-type teacherLeader struct {
-	student
-	level int
-}
-
-func (stu student) run() {
-	fmt.Printf("%s 跑步\n", stu.name)
-}
-func (tea teacherLeader) run() {
-	fmt.Printf("%s 开车\n", tea.name)
-}
-func runAction(i peopler) {
-	i.run()
-}
-func Interface() {
-	stu := student{1001, "jack", 18, "beijing"}
-	//stu.run()
-	teaLeader := teacherLeader{student{1001, "jack", 18, "beijing"}, 10}
-	//teaLeader.run()
-
-	runAction(stu)
-	runAction(teaLeader)
-}
-//log
-jack 跑步
-jack 开车
-```
--   定义接口，实现接口，通过函数传递接口来实现多态
-
-***接口继承和转换***
-
-```
-type peopler interface {
-	run()
-}
-type teacherleaderer interface {
-	peopler
-	test()
-}
-type teacherLeader struct {
-	//student
-	level int
-}
-
-func (tea teacherLeader) run() {
-	fmt.Printf("%d 开车\n", tea.level)
-}
-func (tl teacherLeader) test() {
-	fmt.Printf("%d 测试\n", tl.level)
-}
-	var p peopler
-	var stuer teacherleaderer = teacherLeader{1}
-	//接口继承
-	stuer.run()
-	stuer.test()
-
-	//父接口接收 子接口
-	p = stuer
-	p.run()
-//输出
-1 开车
-1 测试
-1 开车
-```
--   接口可以通过继承来使用父接口的方法
--   父接口可以接收子接口的对象
-
-***空接口***
-
-```
-type nilInterfacer interface {
-}
-    var test1 nilInterfacer = 1
-	var test2 nilInterfacer = "test"
-	fmt.Println(test1, test2)
-//输出
-1 test
-```
--   空接口可以接收任意类型的参数
-
-***类型断言***
-
-```
-//类型断言
-	var test1 nilInterfacer = 1
-	var test2 nilInterfacer = "test"
-	fmt.Println(test1, test2)
-
-	var arr [2]nilInterfacer = [2]nilInterfacer{test2, test1}
-	for _, v := range arr {
-		if value, ok := v.(string); ok == true {
-			fmt.Println("string", value)
-		} else if value, ok := v.(int); ok == true {
-			fmt.Println("int", value)
-		} else {
-			fmt.Println("other")
-		}
-	}
-//输出
-1 test
-string test
-int 1
-```
-
--   可以通过 变量.(类型来判断) 来判断是否是某类型
-
-
-## 5.8 管道
-
 
 
 # 第六章 面相对象 </br>
@@ -1509,6 +1392,139 @@ name=jack,age=18,tid=1111,class=101,lid=100,leavel=1
 	f2(&stu)
 ```
 
+## 6.5 接口
+
+接口是一种规范与标准，不关心具体的实现过程
+
+***接口定义和使用***
+
+```
+type peopleer interface{
+	
+}
+```
+-   type 接口名 interface{} 来定义一个接口
+-   接口名一般以er结尾
+-   接口只定义方法，不实现方法
+
+
+```
+type student struct {
+	stid    int
+	name    string
+	age     int
+	address string
+}
+type peopler interface {
+	run()
+}
+type teacherLeader struct {
+	student
+	level int
+}
+
+func (stu student) run() {
+	fmt.Printf("%s 跑步\n", stu.name)
+}
+func (tea teacherLeader) run() {
+	fmt.Printf("%s 开车\n", tea.name)
+}
+func runAction(i peopler) {
+	i.run()
+}
+func Interface() {
+	stu := student{1001, "jack", 18, "beijing"}
+	//stu.run()
+	teaLeader := teacherLeader{student{1001, "jack", 18, "beijing"}, 10}
+	//teaLeader.run()
+
+	runAction(stu)
+	runAction(teaLeader)
+}
+//log
+jack 跑步
+jack 开车
+```
+-   定义接口，实现接口，通过函数传递接口来实现多态
+
+***接口继承和转换***
+
+```
+type peopler interface {
+	run()
+}
+type teacherleaderer interface {
+	peopler
+	test()
+}
+type teacherLeader struct {
+	//student
+	level int
+}
+
+func (tea teacherLeader) run() {
+	fmt.Printf("%d 开车\n", tea.level)
+}
+func (tl teacherLeader) test() {
+	fmt.Printf("%d 测试\n", tl.level)
+}
+	var p peopler
+	var stuer teacherleaderer = teacherLeader{1}
+	//接口继承
+	stuer.run()
+	stuer.test()
+
+	//父接口接收 子接口
+	p = stuer
+	p.run()
+//输出
+1 开车
+1 测试
+1 开车
+```
+-   接口可以通过继承来使用父接口的方法
+-   父接口可以接收子接口的对象
+
+***空接口***
+
+```
+type nilInterfacer interface {
+}
+    var test1 nilInterfacer = 1
+	var test2 nilInterfacer = "test"
+	fmt.Println(test1, test2)
+//输出
+1 test
+```
+-   空接口可以接收任意类型的参数
+
+***类型断言***
+
+```
+//类型断言
+	var test1 nilInterfacer = 1
+	var test2 nilInterfacer = "test"
+	fmt.Println(test1, test2)
+
+	var arr [2]nilInterfacer = [2]nilInterfacer{test2, test1}
+	for _, v := range arr {
+		if value, ok := v.(string); ok == true {
+			fmt.Println("string", value)
+		} else if value, ok := v.(int); ok == true {
+			fmt.Println("int", value)
+		} else {
+			fmt.Println("other")
+		}
+	}
+//输出
+1 test
+string test
+int 1
+```
+
+-   可以通过 变量.(类型来判断) 来判断是否是某类型
+
+
 
 
 # 第七章 异常处理</br>
@@ -1686,3 +1702,412 @@ import uitl "fold/folder/utils"  //可以使用util.来访问该包的函数和�
 
 
 
+
+# 第十章 并发编程</br>
+
+***并行***  同时执行多条指令，真正的并行</br>
+
+***并发***  多条指令交替执行，利用cpu高速运转能力，控制多个指令交替执行，在微观上不是并行，宏观上并行</br>
+
+***程序*** 代码打包的二进制文件，存储在硬盘上，不占用系统资源</br>
+
+***进程*** 抽象的概念，程序在内存上运行起来，占用系统资源，拥有PCB和独占地址空间，进程的5种状态：初始态，就绪态，运行态，挂起态，终止态</br>
+
+***线程*** 轻量级的进程，拥有PCB，但是不能独占地址空间，共享进程的地址空间，本质就是进程</br>
+区别：</br>
+-	进程独占地址空间，线程共享地址空间</br>
+-	进程是最小的资源分配单位，线程是最小的执行单位</br>
+-	进程相互独立有较高的安全性，较低的性能；线程有相对于进程较高的性能，较低的安全性</br>
+
+***协程*** 轻量级线程，相对于进程和线程，更轻量级，性能更高，能综合利用cpu的运算能力，发挥cpu的优势</br>
+
+***孤儿进程*** 父进程比子进程提前释放，子进程成为孤儿进程，父进程成为init（）进程，导致子进程被init（）进程认领，成为init（）进程领养孤儿进程</br>
+
+***僵尸进程*** 父进程没有释放子进程的PCB，导致子进程的PCB长时间停留在内核中，成为僵尸进程</br>
+
+
+***主流的实现并发模型***  </br>
+-	**多进程** ：多进程是在操作系统层面进行并发的基本模式。同时也是开销最大的模式。在Linux平台上，很多工具链正是采用这种模式在工作。比如某个Web服务器，它会有专门 的进程负责网络端口的监听和链接管理，还会有专门的进程负责事务和运算。这种方法 的好处在于简单、进程间互不影响，坏处在于系统开销大，因为所有的进程都是由内核 管理的。
+-	**多线程** ：多线程在大部分操作系统上都属于系统层面的并发模式，也是我们使用最多的 最有效的一种模式。目前，我们所见的几乎所有工具链都会使用这种模式。它比多进程 的开销小很多，但是其开销依旧比较大，且在高并发模式下，效率会有影响。 3
+-	**基于回调的非阻塞/异步IO** ：这种架构的诞生实际上来源于多线程模式的危机。在很多 高并发服务器开发实践中，使用多线程模式会很快耗尽服务器的内存和CPU资源。而这 种模式通过事件驱动的方式使用异步IO，使服务器持续运转，且尽可能地少用线程，降 低开销，它目前在Node.js中得到了很好的实践。但是使用这种模式，编程比多线程要复 杂，因为它把流程做了分割，对于问题本身的反应不够自然。
+-	**协程** ：协程(Coroutine)本质上是一种用户态线程，不需要操作系统来进行抢占式调度， 且在真正的实现中寄存于线程中，因此，系统开销极小，可以有效提高线程的任务并发 性，而避免多线程的缺点。使用协程的优点是编程简单，结构清晰;缺点是需要语言的 支持，如果不支持，则需要用户在程序中自行实现调度器。目前，原生支持协程的语言 还很少。
+
+***共享内存系统*** ：传统线程之间通信，只能采用共享内存的方式。为了保证共享内存的有效性，我们采取了很多措施，比 如加锁等，来避免死锁或资源竞争。实践证明，我们很难面面俱到，往往会在工程中遇到各种奇怪的故障和问题。
+
+为了简化共享内存系统，出现了消息传递系统 ***消息传递系统*** ：对线程间共享状态的各种操作都被封装在线程之间传递的消息中，这通常要求:发送消息时 对状态进行复制，并且在消息传递的边界上交出这个状态的所有权。从逻辑上来看，这个操作与共享内存系统中执行的原子更新操作相同，但从物理上来看则非常不同。由于需要执行复制操作，所以大多数消息传递的实现在性能上并不优越，但线程中的状态管理工作通常会变得更为简单。
+
+
+最早被广泛应用的消息传递系统是由C. A. R. Hoare在他的Communicating Sequential Processes中提出的。在CSP系统中，所有的并发操作都是通过独立线程以异步运行的方式来实现的。这些线程必须通过在彼此之间发送消息，从而向另一个线程请求信息或者将信息提供给另一 个线程。使用类似CSP的系统将提高编程的抽象级别。随着时间的推移，一些语言开始完善消息传递系统，并以此为核心支持并发，比如Erlang。
+
+
+## 10.1 go程    
+
+
+***goroutine***      
+
+结合线程和协程的优点，产生了go程
+
+goroutine是Go语言中的轻量级线程实现，由Go运行时(runtime)管理，使用关键字 **go** ➕ 函数 就可以将函数放入协程中执行，如果这个函数有返回值，那么这个 返回值会被丢弃。
+
+***并发通信***      
+
+用c通过共享内存实现并发通信    </br>
+```
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+void *count();
+pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER; int counter = 0;
+main() {
+	int rc1, rc2;
+	pthread_t thread1, thread2;
+	/* 创建线程，每个线程独立执行函数functionC */
+	if((rc1 = pthread_create(&thread1, NULL, &add, NULL))) {
+				printf("Thread creation failed: %d\n", rc1);
+			}
+	if((rc2 = pthread_create(&thread2, NULL, &add, NULL))) {
+				printf("Thread creation failed: %d\n", rc2);
+			}
+	/* 等待所有线程执行完毕 */ pthread_join( thread1, NULL); pthread_join( thread2, NULL);
+	exit(0); 
+}
+void *count() {
+        pthread_mutex_lock( &mutex1 );
+        counter++;
+        printf("Counter value: %d\n",counter);
+        pthread_mutex_unlock( &mutex1 );
+}
+//翻译为go
+package main
+import "fmt" 
+import "sync" 
+import "runtime"
+var counter int = 0
+func Count(lock *sync.Mutex) { 
+	lock.Lock()
+    counter++
+	fmt.Println(z)
+	lock.Unlock()
+}
+func main() {
+	lock := &sync.Mutex{}
+	for i := 0; i < 10; i++ { 
+		go Count(lock)
+	}
+	for { 
+		lock.Lock()
+		c := counter
+		lock.Unlock()
+		runtime.Gosched() 
+		if c >= 10 {
+  		}
+	}
+}
+```
+</br>
+
+
+
+## 10.2 通道channel  </br>
+
+为了解决共享内存的复杂度，go引入了channel，通过消息机制来更简单地解决通信
+
+***消息机制*** 认为每个并发单元是自包含的、独立的个体，并且都有自己的变量，但在不同并发单元间这些变量不共享。每个并发单元的输入和输出只有一种，那就是消息。这有点类似于进程的概念，每个进程不会被其他进程打扰，它只做好自己的工作就可以了。不同进程间靠消息来通信，它们不会共享内存。
+
+***channel*** channel是进程内的通信方式，因此通过channel传递对象的过程和调用函数时的参数传递行为一致，也可以传递指针等。
+
+-	channel是类型相关的。也就是说，一个channel只能传递一种类型的值，这个类型需要在声明channel时指定。如果对Unix管道有所了解的话，就不难理解channel，可以将其认为是一种类型安全的管道。
+-	channel在两个或多个goroutine之间传递消息。
+-	如果需要跨进程通信，我们建议用分布式系统的方法来解决，比如使用Socket或者HTTP等通信协议。Go语言对于网络方面也有非常完善的支持。
+
+***channel声明***  </br>
+var chanName chan 数据类型
+```
+var ch chan int 
+ch := make(chan int)//定义一个channel也很简单，直接使用内置的函数make()
+var m map[string] chan bool //或者，我们声明一个map，元素是bool型的channel:
+```
+***用法实例***  
+```
+package main
+import "fmt"
+func Count(ch chan int) { 
+	ch <- 1  //写入数据
+    fmt.Println("Counting")
+}
+func main() {
+	chs := make([]chan int， 10) 
+	for i := 0; i < 10; i++ {
+		chs[i] = make(chan int)
+		go Count(chs[i])
+	}
+	for _, ch := range(chs) { 
+		<-ch  //读取数据
+	}
+}
+
+```
+
+-	如果channel之前没有写入数据，那么从channel中读取数据也会导致程序阻塞，直到channel 中被写入数据为止。
+
+***select*** 
+
+select通常被用作：监控一系列的文件句柄，一旦其中一个文件句柄发生了IO动作，该select()调用就会被返回。后来该机制也被用于实现高并发的Socket服务器程序。</br>
+Go语言直接在语言级别支持select关键字，用于处理异步IO问题。</br>
+-	select的用法与switch语言非常类似，由select开始一个新的选择块，每个选择条件由case语句来描述。
+-	switch语句可以选择任何可使用相等比较的条件相比，select有比较多的 限制，其中最大的一条限制就是每个case语句里必须是一个IO操作，大致的结构如下:
+```
+select {
+	case <-chan1:// 如果chan1成功读到数据，则进行该case处理语句 case chan2 <- 1:// 如果成功向chan2写入数据，则进行该case处理语句 
+	default:// 如果上面都没有成功，则进入default处理流程
+ }
+ 可以看出，select不像switch，后面并不带判断条件，而是直接去查看case语句。每个case语句都必须是一个面向channel的操作。比如上面的例子中，第一个case试图从chan1读取一个数据并直接忽略读到的数据，而第二个case则是试图向chan2中写入一个整型数1，如果这两者都没有成功，则到达default语句。
+ ```
+
+-	每个case是一个独立的go程，使用select的监听与其他go程之间是异步通信机制
+-	当没有io操作时，会阻塞当前case
+-	当多个case都满足是，随机选择一个执行
+-	select一般和for配合使用，用来不间断地监听io操作
+-	防止系统忙轮询一般省略default
+
+跳出一般用return、goexit、goto，os.exit。如果嵌套for，一般不使用break，break默认只跳出select，不能跳出轮询
+
+
+
+***缓冲机制*** </br>
+
+在调用make()时将缓冲区大小作为第二个参数传入
+```
+c := make(chan int, 1024)
+```
+-	创建了一个大小 为1024的int类型channel，即使没有读取方，写入方也可以一直往channel里写入，在缓冲区被 填完之前都不会阻塞
+-	cap,len 用法和切片map一样，channel不可扩容
+-	从带缓冲的channel中读取数据可以使用与常规非缓冲channel完全一致的方法，但我们也可以使用range关键来实现更为简便的循环读取:
+```
+for i := range c {
+	fmt.Println("Received:", i)
+}
+```
+
+***超时机制*** 
+
+向channel写数据时发现channel已满，或者从channel试图读取数据时发现channel为空。如果不正确处理这些情况，很可能会导致整个goroutine锁死。</br>
+
+Go语言没有提供直接的超时处理机制，但我们可以利用select机制。虽然select机制不是 专为超时而设计的，却能很方便地解决超时问题。因为select的特点是只要其中一个case已经 完成，程序就会继续往下执行，而不会考虑其他case的情况。</br>
+
+ 基于此特性，我们来为channel实现超时机制:
+ ```
+//超时
+	quit := make(chan bool)
+	ch := make(chan int)
+	go func() {
+		for {
+			select {
+			case num := <-ch:
+				fmt.Println(num)
+			case <-time.After(time.Second * 3)://每次写入ch都会重置time.After,当大于3s无写入后，会执行超时退出
+				quit <- true
+				runtime.Goexit()
+			}
+		}
+	}()
+
+	for i := 0; i < 10; i++ {
+		ch <- i
+		time.Sleep(time.Second * 4)
+	}
+	<-quit
+```
+这样使用select机制可以避免永久等待的问题，因为程序会在timeout中获取到一个数据后继续执行，无论对ch的读取是否还处于等待状态，从而达成1秒超时的效果。
+
+***单向channel*** </br>
+
+-	单向channel只能用于发送或者接收数据。
+-	channel本身必然是同时支持读写的，否则根本没法用。假如一个channel真的只能读，那么肯定只会是空的，因为你没机会往里面写数据。同理，如果一个channel只允许写，即使写进去了，也没有丝毫意义，因为没有机会读取里面的数据。
+-	所谓的单向channel概念，其实只是对channel的一种使用限制。我们在将一个channel变量传递到一个函数时，可以通过将其指定为单向channel变量，从而限制该函数中可以对此channel的操作，比如只能往这个channel写，或者只能从这个channel读。 </br>
+
+单向channel变量的声明如下:
+```
+var ch1 chan int // ch1是一个正常的channel，不是单向的 2 var ch2 chan<- float64// ch2是单向channel，只用于写float64数据
+var ch3 <-chan int // ch3是单向channel，只用于读取int数据
+```
+那么单向channel初始化示例如下:
+```
+ch4 := make(chan int)
+ch5 := <-chan int(ch4) // ch5就是一个单向的读取channel ch6 := chan<- int(ch4) // ch6 是一个单向的写入channel
+```
+
+
+
+***channel传递***  </br>
+在Go语言中channel本身也是一个原生类型，与map之类的类型地位一样，因 此channel本身在定义后也可以通过channel来传递。</br>
+例如，我们只要定义一系列PipeData的数据结构并一起传递给这个函数，就可以达到流式处理数据的目的:
+```
+type PipeData struct {
+	 value int
+	handler func(int) int
+	next chan int
+}
+func handle(queue chan *PipeData) { 
+	for data := range queue {
+        data.next <- data.handler(data.value)
+	}
+}
+```
+
+
+***channel关闭***  </br>
+
+关闭channel直接使用Go语言内置的close()函数:</br>
+``` close(ch)```</br>
+在读取的时候使用多重返回值的方式进行是否关闭的判断:</br>
+```x, ok := <-ch``` </br>
+这个用法与map中的按键获取value的过程比较类似，只需要看第二个bool返回值，如果返回值是false则表示ch已经被关闭</br>
+
+## 10.3 并发多核、同步、时间片     </br>
+
+***并发多核***    </br>
+
+runtime.GOMAXPROCS(16) </br>
+启动goroutine之前先调用这个语句以设置使用16个CPU核心；</br>
+NumCPU()来获，runtime包中提供这个函数取核心数。</br>
+使用runtime 包中的Gosched()函数实现主动出让时间片给其他goroutine</br>
+
+***同步***     </br>
+
+***同步锁*** ：Go语言包中的sync包提供了两种锁类型: ***sync.Mutex*** 和 ***sync.RWMutex*** 。
+-	Mutex当一个goroutine获得了Mutex后，其他goroutine就只能等 到这个goroutine释放该Mutex。
+-	RWMutex，是经典的单写多读模型。在读锁占用的情况下，会阻止写，但不阻止读，也就是多个goroutine可同时获取读锁(调用RLock()方法;而写锁(调用Lock()方法)会阻止任何其他goroutine(无论读和写)进来，整个锁相当于由该goroutine独占。
+-	从RWMutex的实现看，RWMutex类型其实组合了Mutex
+```
+type RWMutex struct { 
+	w Mutex
+	writerSem uint32 
+	readerSem uint32 
+	readerCount int32 
+	readerWait int32
+}
+```
+-	对于这两种锁类型，任何一个Lock()或RLock()均需要保证对应有Unlock()或RUnlock() 调用与之对应，否则可能导致等待该锁的所有goroutine处于饥饿状态，甚至可能导致死锁。锁的典型使用模式如下:
+```
+var l sync.Mutex func foo() {
+    l.Lock()
+    defer l.Unlock()
+    //...
+} 
+```
+
+***全局唯一锁***  </br>
+
+Go语言提供了一个Once类型来保证全局的唯一性操作，具体代码如下:
+```
+var a string
+var once sync.Once
+func setup() {
+	a = "hello, world"
+}
+func doprint() { 
+	once.Do(setup)
+	print(a) 
+}
+func twoprint() { 
+	go doprint() 
+	go doprint()
+} 
+```
+如果这段代码没有引入Once，setup()将会被每一个goroutine先调用一次。Go语言标准库为我们引入了Once类型。once的Do()方法可以保证在全局范围内只调用指定的函数一次(这里指 setup()函数)，而且所有其他goroutine在调用到此语句时，将会先被阻塞，直至全局唯一的 once.Do()调用结束后才继续。</br>
+
+ ***死锁***  是错误使用锁的一种状态。deadlock </br>
+
+ ***造成死锁的原因*** </br> 
+
+-	在同一个go程中使用channel的读写操作
+-	在子go程实现读或者写操作之前，操作channel的读或者写
+-	过个go程中相互等待读或者写channel
+-	锁和channel混用，例如：</br>
+```
+var rwMutex sync.RWMutex
+var share chan int
+func readGO(index int) {
+	for {
+		rwMutex.RLock()
+		fmt.Println(index, "\t r:", <-share)
+		time.Sleep(time.Second)
+		rwMutex.RUnlock()
+	}
+}
+func writeGO(index int) {
+	for {
+		rwMutex.Lock()
+		data := rand.Intn(200)
+		share <- data
+		fmt.Println(index, "\t w:", data)
+		time.Sleep(time.Second)
+		rwMutex.Unlock()
+	}
+}
+//调用
+    seed := time.Now().UnixNano()
+	fmt.Println(seed)
+	rand.Seed(seed)
+	share = make(chan int)
+	for i := 0; i < 6; i++ {
+		go readGO(i)
+	}
+	for i := 0; i < 6; i++ {
+		go writeGO(i)
+	}
+	for {
+
+	}
+```
+
+# 第十一章 网略编程  </br>
+
+## 网略概述 </br>
+
+***协议*** 网络终端之间共同遵守的规则</br>
+
+***网络分层和相关协议*** </br>
+
+OSI 7层模型从上往下：</br>
+
+应用层：常见的协议有HTTP协议，FTP协议。7)是最靠近用户的OSI层。这一层为用户的应用程序（例如电子邮件、文件传输和终端仿真）提供网络服务。</br>
+表示层：可确保一个系统的应用层所发送的信息可以被另一个系统的应用层读取。例如，PC程序与另一台计算机进行通信，其中一台计算机使用扩展二一十进制交换码(EBCDIC)，而另一台则使用美国信息交换标准码（ASCII）来表示相同的字符。如有必要，表示层会通过使用一种通格式来实现多种数据格式之间的转换。</br>
+会话层：通过传输层(端口号：传输端口与接收端口)建立数据传输的通路。主要在你的系统之间发起会话或者接受会话请求（设备之间需要互相认识可以是IP也可以是MAC或者是主机名）。</br>
+传输层：常见协议有TCP/UDP协。定义了一些传输数据的协议和端口号（WWW端口80等），如：TCP（传输控制协议，传输效率低，可靠性强，用于传输可靠性要求高，数据量大的数据），UDP（用户数据报协议，与TCP特性恰恰相反，用于传输可靠性要求不高，数据量小的数据，如QQ聊天数据就是通过这种方式传输的）。 主要是将从下层接收的数据进行分段和传输，到达目的地址后再进行重组。常常把这一层数据叫做段。</br>
+网络层：常见协议有IP协议、ICMP协议、IGMP协议。在位于不同地理位置的网络中的两个主机系统之间提供连接和路径选择。Internet的发展使得从世界各站点访问信息的用户数大大增加，而网络层正是管理这种连接的层</br>
+数据链路层：定义了如何让格式化数据以帧为单位进行传输，以及如何让控制对物理介质的访问。这一层通常还提供错误检测和纠正，以确保数据的可靠传输。如：串口通信中使用到的115200、8、N、1</br>
+物理层：主要定义物理设备标准，如网线的接口类型、光纤的接口类型、各种传输介质的传输速率等。它的主要作用是传输比特流（就是由1、0转化为电流强弱来进行传输，到达目的地后再转化为1、0，也就是我们常说的数模转换与模数转换）。这一层的数据叫做比特</br>
+
+TCP/IP 4层模型：</br>
+链路层：包含数据链路层、物理层，常见的协议有ARP协议、RARP协议</br>
+
+网络层：包含网络层</br>
+传输层：包含传输层</br>
+
+应用层：包含应用层，表示层和会话层</br>
+ 
+TCP传输控制协议（Transmission Control Protocol）是一种面向连接的、可靠的、基于字节流的传输层通信协议。</br>
+UDP用户数据报协议（User Datagram Protocol）是OSI参考模型中一种无连接的传输层协议，提供面向事务的简单不可靠信息传送服务。</br>
+HTTP超文本传输协议（Hyper Text Transfer Protocol）是互联网上应用最为广泛的一种网络协议。</br>
+FTP文件传输协议（File Transfer Protocol）</br>
+IP协议是因特网互联协议（Internet Protocol）</br>
+ICMP协议是Internet控制报文协议（Internet Control Message Protocol）它是TCP/IP协议族的一个子协议，用于在IP主机、路由器之间传递控制消息。</br>
+IGMP协议是 Internet 组管理协议（Internet Group Management Protocol），是因特网协议家族中的一个组播协议。该协议运行在主机和组播路由器之间。</br>
+ARP协议是正向地址解析协议（Address Resolution Protocol），通过已知的IP，寻找对应主机的MAC地址。</br>
+RARP是反向地址转换协议，通过MAC地址确定IP地址。</br>
+
+***各层之间协议的关系***：</br>
+
+![各层之间其他协议的关系](./TCP4层模型之间的协议.png)
+
+***TCP/IP通信过程***</br>
+
+![TCP/IP通信过程](./TCPIP通信过程.png)
+
+## socket编程 </br>
+
+
+
+## http编程 </br>

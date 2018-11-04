@@ -2,6 +2,9 @@ package dataType
 
 import (
 	"fmt"
+	"strings"
+	"bufio"
+	"os"
 )
 
 func DataType() {
@@ -76,6 +79,14 @@ func String() {
 	//result := strings.Join(slice, "-")//字符串连接
 	//fmt.Printf("%T,%s", result, result)
 
+	fmt.Println(strings.Contains("i am jack","am"))
+	fmt.Println(strings.Join([]string{"i","am","jack"}," "))
+	fmt.Println(strings.Split("i am jack"," "))
+	fmt.Println(strings.Trim(" i am jack "," "))
+    fmt.Println(strings.Replace("i am jack","a","#repalce#",-1))
+	fmt.Println(strings.Fields("i am jack"))
+	fmt.Println(strings.Repeat("i am jack",3))
+	fmt.Println(strings.Index("i am jack","am"))
 }
 func Char() {
 	var a byte = 'c' //单引号括起来默认是字符
@@ -327,7 +338,7 @@ func Slice() { //下标赋值,空切片为nil，指向0x0，不能直接用下�
 	//slice[0]=1//error
 
 	//slice := []int{}//类型推导
-	//slice := make([]int,10)//make(类型，长度，容量可选)
+	//slice := make([]int,10)//make(类型，长度，容量可选)，长度（0~n）
 	//slice=append(slice,1,2)//append(切片，内容不定参列表（1~n)，
 	//append如果没有超过容量，地址不发生改变，如果超过容量，切片地址会发生变化
 
@@ -338,26 +349,115 @@ func Slice() { //下标赋值,空切片为nil，指向0x0，不能直接用下�
 	//copy(s, slice)
 	//fmt.Println(s)
 
-}
 
+	//从数组截取  和make（）中的参数不一样
+	//slice[low:high:max]
+	//low 起始位置
+	//high 结束位置
+	//len = high - low
+	//max : cap = max -low
+	//max 跟随最近被截取的切片或者数组
+	//arr := [10]int{1,2,3,4,5,6,7,8,9,10}
+	//s1:= arr[0:3:9]//s1= [1 2 3] s1长度 3 s1容量 9
+	//fmt.Println("s1=",s1,"s1长度",len(s1),"s1容量",cap(s1))
+	//s2:= s1[1:5:6]//s2= [2 3 4 5] s1长度 4 s1容量 5
+	////s2 虽然是从s1截取，但是实际操作的arr数组，所以high可以截取s1中没有的元素
+	////s2 中max <= s1 的max
+	//fmt.Println("s2=",s2,"s1长度",len(s2),"s1容量",cap(s2))
+
+	str := []string{"red","","black","","test","","red","black"}
+	//str= sliceDel(str,"")
+	//sliceDelPoint(&str,"")
+
+	str = delMultKey(str)
+
+	for _,v := range str{
+		fmt.Printf("%q",v)
+	}
+
+	slice := []int{1,2,3,4,5}
+	copytest(&slice)
+	fmt.Println(slice[:len(slice)-1])
+
+}
+func sliceDel(slice []string,del string)[]string{
+	//out := make([]string,0)
+	//for _,v:=range slice{
+	//	if v != ""{
+	//		out = append(out,v)
+	//	}
+	//}
+	for i,v:=range slice{
+		if v == del{
+			if i+1<=len(slice){
+				slice = append(slice[:i],slice[i+1:]...)
+			}
+		}
+	}
+	return slice
+}
+func sliceDelPoint(slice *[]string,del string){
+	for i,v:=range *slice{
+		if v == del{
+			if i+1<=len(*slice){
+				*slice = append((*slice)[:i],(*slice)[i+1:]...)
+			}
+		}
+	}
+}
+//str := []string{"red","","black","","test","","red","black"}
+
+func delMultKey(slice []string)[]string{
+	out :=slice[:1]
+	for j:= 1;j<len(slice);j++{
+		i:=0
+		for ; i<len(out);i++{
+			if slice[j]==out[i]{
+				break
+			}
+		}
+		if i==len(out){
+			out= append(out,slice[j])
+		}
+
+	}
+	return out
+}
+func copytest(slice *[]int){
+	copy((*slice)[2:5],(*slice)[3:5])
+}
 func Map() { //map 需要初始化后才能赋值，只声明是一个空指针指向0x0
 
 	//定义 var 变量名 map[keytype]valuetype  :
 	// keytype可以用= /！=比较的都可以作为key,float,切片，函数不能作为keytype
 	//var dic map[int]string = map[int]string{101: "wo", 102: "ta"}
 	//dic := map[int]string{101: "ta", 102: "wo"}
-	dic := make(map[int]string)
-
-	dic[101] = "wo"
-	dic[102] = "ta"
-	fmt.Println(dic)
-
-	//map 需要初始化后才能赋值，只声明是一个空指针指向0x0
-	//var dic map[int]string
+	//dic := make(map[int]string)
+	//
 	//dic[101] = "wo"
+	//dic[102] = "ta"
+	//fmt.Println(dic)
+	//
+	////map 需要初始化后才能赋值，只声明是一个空指针指向0x0
+	////var dic map[int]string
+	////dic[101] = "wo"
+	//
+	//delete(dic, 101)
+	//fmt.Println(dic)
 
-	delete(dic, 101)
-	fmt.Println(dic)
+	reader:=bufio.NewReader(os.Stdin)
+	str ,_:=reader.ReadString('\n')
+	fmt.Println(getMapFromStr(str))
+
+}
+func getMapFromStr(str string)map[string]int{
+	//slice :=strings.Split(str," ")
+	slice :=strings.Fields(str)
+	m := make(map[string]int)
+	for _,v:=range slice{
+		m[v]++
+	}
+	return m
 
 }
 
@@ -368,6 +468,27 @@ type student struct {
 	address string
 }
 
+
+//封装一个有 string、bool、int、[]string 类型的结构体 Person。
+//main函数中声明结构体变量，调用initPerson函数完成结构体赋值，并在main中查看赋值结果
+type Person struct {
+	name string
+	isMan bool
+	age int
+	interesting []string
+}
+func (p *Person)PInitWithArg(name string,isMan bool,age int,interesting []string){
+	p.name=name
+	p.age=age
+	p.isMan=isMan
+	p.interesting=interesting
+}
+func PinitWithPersion(p *Person){
+	p.name="name"
+	p.age=19
+	p.isMan=true
+	p.interesting=[]string{}
+}
 func Struct() {
 	//var stu student = student{101, "jack", 28, "北京市昌平区"}
 	//stu := student{102, "her", 18, ""}
@@ -400,15 +521,25 @@ func Struct() {
 	//sliceM["1002"] = append(sliceM["1002"], student{1003, "test", 100, "beijing"})
 	//fmt.Println(sliceM)
 
-	//结构体作为函数参数
-	stu := student{1001, "jack", 18, "beijing"}
-	structTest(stu)
-	fmt.Println(stu)
+	////结构体作为函数参数
+	//stu := student{1001, "jack", 18, "beijing"}
+	//structTest(stu)
+	//fmt.Println(stu)
+	//
+	////结构体map作为函数参数
+	//m := map[string]student{"tom": student{1001, "jack", 18, "beijing"}}
+	//structTestMap(m)
+	//fmt.Println(m)
 
-	//结构体map作为函数参数
-	m := map[string]student{"tom": student{1001, "jack", 18, "beijing"}}
-	structTestMap(m)
-	fmt.Println(m)
+	var p Person
+	p.PInitWithArg("jack",true,27,[]string{"play games","listing"})
+	fmt.Println(p)
+
+	PinitWithPersion(&p)
+	fmt.Println(p)
+
+
+
 }
 func structTest(stu student) {
 	stu.age = 19

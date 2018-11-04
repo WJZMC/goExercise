@@ -1,0 +1,5 @@
+package Net
+
+func NetInit() {
+
+}

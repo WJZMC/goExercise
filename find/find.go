@@ -4,8 +4,8 @@ import "fmt"
 
 func Find() {
 
-	arr := [10]int{5, 10, 20, 50, 100, 500, 600, 700, 1000, 1001}
-	BinaryFind(arr, 500, 0, len(arr)-1)
+	//arr := [10]int{5, 10, 20, 50, 100, 500, 600, 700, 1000, 1001}
+	//BinaryFind(arr, 500, 0, len(arr)-1)
 }
 
 func BinaryFind(arr [10]int, findObj, leftIndex, rightIndex int) {
