@@ -1,6 +1,6 @@
 package main
 
-import "studyProject/redis"
+import "studyProject/algorithms"
 
 //var tempp = 100
 
@@ -71,6 +71,8 @@ func main() {
 	//reflectPackage.JsonEncodeDecode()
 	//reflectPackage.ReflectDemo()
 
+	//redis.RedisTest()
 
-	redis.RedisTest()
+	algorithms.AlgorithmsTest()
+
 }
