@@ -1,0 +1,21 @@
+syntax = "proto3";
+package encoding;
+message JobProto
+{
+    int32 id = 1;// 1，2，3是唯一编号
+    string name = 2 ;
+    int32 age = 3;
+    repeated string emails =4;
+    repeated PhoneNum phones=5;
+}
+enum phoneType
+{
+    Mobile =0;
+    host =1;
+    worker =2;
+}
+message PhoneNum
+{
+    string number =1;
+    phoneType type =2;
+}
